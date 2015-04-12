@@ -19,6 +19,7 @@
 		}else if($code == "show"){
 			if($_POST['search_text']){
 				$search_text = $_POST['search_text'];
+				//使用模糊查询进行关键字搜索
 				$sql="select search_text from baidu where search_text like '%".$search_text."%'";
 				$res=mysql_query($sql,$conn);
 
