@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>高仿百度搜索框</title>
+<style type="text/css">
+	*{margin:0; padding:0;}
+	body{font-size:14px; font-family:arial;}
+	div.search_div{margin:15px 0px 10px 120px; border:0px solid #4791FF; padding:0; width:640px; height:35px; color:black; background-color:white;}
+	input.search_text{width:536px; height:35px; font-size:16px; float:left;}
+	input.search_button{width:100px; height:34px; color:white; letter-spacing:1px; background:#3385ff; float:left;}
+	.search_div ul{width:538px; border-width:0px 1px 1px 1px;  border-style:solid; border-color:#A9A9A9; display:block; list-style:none; background:rgba(255,255,255,1); clear:both; position:absolute; top:54px; left:120px;}
+	.search_div li{display:list-item; cursor:pointer; line-height:20px;}
+	div.main{margin-top:20px; margin-left:120px; width:640px; height:30px; border:0px; padding:0; color:#323232;}
+	.main ul{widht:640px; height:30px; display:block; list-style:none;}
+	.main li{margin-left:10px; float:left; display:list-item;}
+</style>
+</head>
+<body>
+<div class="search_div">
+	<input type="text" class="search_text" id="search_text" name="search_text" onKeyUp="showUl()"/>
+	<!--此处的(百度一下)按钮并不是搜索，而是将输入的词条存入数据库-->
+	<input type="button" class="search_button" id="search_button" value="百度一下" onClick="saveToUl()"/>
+	<!--显示经过数据库查询后结果的ul-->
+	<ul id="search_ul">
+	</ul>
+</div>
+<div class="main">
+	<ul>
+		<li>网页</li>
+		<li>新闻</li>
+		<li>贴吧</li>
+		<li>知道</li>
+		<li>音乐</li>
+		<li>图片</li>
+		<li>视频</li>
+		<li>地图</li>
+	</ul>
+</div>
+<script type="text/javascript">
+	var search_text = document.getElementById("search_text");//元素:搜索输入框
+	var search_ul = document.getElementById("search_ul");//元素:内容提示ul
+	//当用户点击了（百度一下)按钮后把输入的词条保存到数据库
+	var saveToUl = function(){
+		var search_text_con = search_text.value;//字符串:搜索输入框内容
+
+		var xmlHttp = getXMLHttpRequest();
+		if(xmlHttp){
+			var url="search.php";
+			var postBody = "code=save&search_text="+search_text_con;
+			xmlHttp.open("POST",url,true);
+			xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+			xmlHttp.send(postBody);
+			xmlHttp.onreadystatechange=function(){
+				if (xmlHttp.readyState==4){ 
+					if(xmlHttp.responseText == "save_ok"){ 
+						alert("保存成功!"); 
+					}else{ 
+						alert("保存失败!"); 
+					} 
+				}
+			};
+		}
+	};
+	//当键盘按键被松开时执行数据库查询
+	var showUl = function(){
+		search_ul.innerHTML = "";//将提示列表置空
+		var search_text_con = search_text.value;//字符串:搜索输入框内容
+		var xmlHttp = getXMLHttpRequest();
+		if(xmlHttp){
+			var url="search.php";
+			var postBody = "code=show&search_text="+search_text_con;
+			xmlHttp.open("POST",url,true);
+			xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+			xmlHttp.send(postBody);
+			xmlHttp.onreadystatechange=function(){
+				if (xmlHttp.readyState==4){ 
+					if(xmlHttp.responseText != null){ 
+						var result = xmlHttp.responseText;//从数据库查询返回的结果json字符串数组
+						console.log(result);
+						var items = result.split("#");
+						for(var i=0; i< items.length -1; i++){
+							var item_len = items[i].length;
+							var item = items[i].substring(16,item_len-2);
+							createLi(item);
+						}
+					}else{ 
+						alert("显示失败!"); 
+					} 
+				}
+			};
+		}
+	};
+	//根据内容item创建显示搜索框下方的提示ul
+	function createLi(item){
+		var li = document.createElement("li");
+		li.innerHTML = item;
+		search_ul.appendChild(li);
+		li.onclick = function(){
+			search_text.value = li.innerHTML;
+		};
+	}
+	//获取用户AJAX请求的XMLHttpRequest()对象实例
+	function getXMLHttpRequest(){
+		var xmlHttp = false;
+		try{
+			// Firefox, Opera 8.0+, Safari
+			xmlHttp=new XMLHttpRequest();
+		}catch (e){
+		   // Internet Explorer
+		   try{
+			   xmlHttp=new ActiveXObject("Msxml2.XMLHTTP");
+		   }catch (e){
+			  try{
+				  xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+			  }catch (e){
+				  alert("您的浏览器不支持AJAX！");
+				  xmlHttp = false;
+			  }
+		   }
+		}
+		return xmlHttp;
+	}
+</script>
+</body>
+</html>
