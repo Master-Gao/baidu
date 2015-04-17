@@ -32,6 +32,21 @@
 				mysql_free_result($res);
 				mysql_close($conn);
 			}
+		}else if($code == "delete"){
+			if($_POST['search_text']){
+				$search_text = $_POST['search_text'];
+				//删除该关键字的数据库记录
+				$sql="delete from baidu where search_text = '$search_text'";
+				$res=mysql_query($sql,$conn);
+				if($res){
+					$result = "succeed";
+				}else{
+					$result = "fail";
+				}
+				echo $result;
+
+				mysql_close($conn);
+			}
 		}
 	}
 	//由于php中的json_encode编码会将中文编码为乱码，所以下面写了这两个方法作为json编码，可以直接调用JSON()方法，这两个方法非原创，菜鸟我也没看懂。还是要谢谢那位写这段代码的大牛!

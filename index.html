@@ -11,6 +11,8 @@
 	input.search_button{width:100px; height:34px; color:white; letter-spacing:1px; background:#3385ff; float:left;}
 	.search_div ul{width:538px; border-width:0px 1px 1px 1px;  border-style:solid; border-color:#A9A9A9; display:block; list-style:none; background:rgba(255,255,255,1); clear:both; position:absolute; top:54px; left:120px;}
 	.search_div li{display:list-item; cursor:pointer; line-height:20px;}
+	span.span_content{}
+	span.span_delete{float:right; display:block; color:#FFFFFF;}
 	div.main{margin-top:20px; margin-left:120px; width:640px; height:30px; border:0px; padding:0; color:#323232;}
 	.main ul{widht:640px; height:30px; display:block; list-style:none;}
 	.main li{margin-left:10px; float:left; display:list-item;}
@@ -77,7 +79,7 @@
 				if (xmlHttp.readyState==4){ 
 					if(xmlHttp.responseText != null){ 
 						var result = xmlHttp.responseText;//从数据库查询返回的结果json字符串数组
-						console.log(result);
+						//console.log(result);
 						var items = result.split("#");
 						for(var i=0; i< items.length -1; i++){
 							var item_len = items[i].length;
@@ -94,10 +96,58 @@
 	//根据内容item创建显示搜索框下方的提示ul
 	function createLi(item){
 		var li = document.createElement("li");
-		li.innerHTML = item;
+		var span_content = document.createElement("span");
+		span_content.className = "span_content";
+		span_content.innerHTML = item;
+		var span_delete = document.createElement("span");
+		span_delete.className = "span_delete";
+		span_delete.innerHTML = "<u>删除</u>";
+		span_delete.onmouseover = function(){
+			this.style.color = "#000000";
+		}
+		span_delete.onmouseout = function(){
+			this.style.color = "#FFFFFF";
+		}
+		span_delete.onclick = function(e){
+			var search_text_con = this.parentNode.firstChild.innerHTML;
+			var span_delete_ul = this.parentNode.parentNode;
+			var span_delete_li = this.parentNode;
+			var xmlHttp = getXMLHttpRequest();
+			if(xmlHttp){
+				var url="search.php";
+				var postBody = "code=delete&search_text="+search_text_con;
+				xmlHttp.open("POST",url,true);
+				xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+				xmlHttp.send(postBody);
+				xmlHttp.onreadystatechange=function(){
+					if (xmlHttp.readyState==4){ 
+						if(xmlHttp.responseText != null){ 
+							var result = xmlHttp.responseText;//从数据库查询返回的结果json字符串数组
+							console.log(result);
+							if(result == "succeed"){
+								alert("删除成功!");
+								span_delete_ul.removeChild(span_delete_li);
+							}else{
+								alert("删除失败!");
+							}
+						}else{ 
+							alert("删除失败!"); 
+						} 
+					}
+				};
+			}
+			if(e){
+				e.stopPropagation();
+			}else{
+				window.event.cancelBubble = true;
+			}
+		}
+		
+		li.appendChild(span_content);
+		li.appendChild(span_delete);
 		search_ul.appendChild(li);
 		li.onclick = function(){
-			search_text.value = li.innerHTML;
+			search_text.value = span_content.innerHTML;
 		};
 	}
 	//获取用户AJAX请求的XMLHttpRequest()对象实例
